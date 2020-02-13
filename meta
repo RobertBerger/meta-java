@@ -1,7 +1,8 @@
 Version: 1
-Previous: 1ac9cebcff4f8cecbc9444185265089b0da819ef
-Head: 213b40c25602d23d00366149a778d2e53779b018
+Previous: 0dfe4c20180d493aea0c174d0b61942f169f632d
+Head: 898a0ae33c9102387aae2e3427a007e3935e663e
 Applied:
   0001-backported-features_check-distro_features_check-for-.patch: 213b40c25602d23d00366149a778d2e53779b018
+  0002-remove-gcc-9-complaints-Wno-error-format-overflow.patch: 898a0ae33c9102387aae2e3427a007e3935e663e
 Unapplied:
 Hidden:
