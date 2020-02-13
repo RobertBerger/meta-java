@@ -1,0 +1,62 @@
+Bottom: b4f28c2d3c5205229ed59125acf54df775978334
+Top:    5cc5b0f4462ee8a3482764473620f48e325a5f78
+Author: robert.berger <robert.berger@ReliableEmbeddedSystems.com>
+Date:   2020-02-13 19:44:19 +0000
+
+backported features_check -> distro_features_check for zeus
+
+Signed-off-by: student-lxc-yp-builder-2 <student-lxc-yp-builder-2@ReliableEmbeddedSystems.com>
+
+
+---
+
+diff --git a/recipes-core/cacao/cacao_2d6f6c14daf9.bb b/recipes-core/cacao/cacao_2d6f6c14daf9.bb
+index 0e50b68..6783894 100644
+--- a/recipes-core/cacao/cacao_2d6f6c14daf9.bb
++++ b/recipes-core/cacao/cacao_2d6f6c14daf9.bb
+@@ -19,7 +19,7 @@ S = "${WORKDIR}/cacaovm-cacao-staging-${PV}"
+ SRC_URI[md5sum] = "5157d0bb9eb1332f7a6b6186eaac01aa"
+ SRC_URI[sha256sum] = "34b51d660d69c2a83225fd75eab5e1fac002fb5974cb4a74b7478baf923a76cd"
+ 
+-inherit java autotools-brokensep update-alternatives pkgconfig features_check
++inherit java autotools-brokensep update-alternatives pkgconfig distro_features_check
+ 
+ REQUIRED_DISTRO_FEATURES = "x11"
+ REQUIRED_DISTRO_FEATURES_class-native := ""
+diff --git a/recipes-core/classpath/classpath_0.99.bb b/recipes-core/classpath/classpath_0.99.bb
+index 5b9d904..714503a 100644
+--- a/recipes-core/classpath/classpath_0.99.bb
++++ b/recipes-core/classpath/classpath_0.99.bb
+@@ -1,6 +1,6 @@
+ require classpath.inc
+ 
+-inherit features_check
++inherit distro_features_check
+ 
+ REQUIRED_DISTRO_FEATURES = "x11"
+ 
+diff --git a/recipes-core/jamvm/jamvm.inc b/recipes-core/jamvm/jamvm.inc
+index b03a5b9..d47b2f1 100644
+--- a/recipes-core/jamvm/jamvm.inc
++++ b/recipes-core/jamvm/jamvm.inc
+@@ -15,7 +15,7 @@ RPROVIDES_${PN}_class-native = ""
+ 
+ BBCLASSEXTEND = "native"
+ 
+-inherit java autotools update-alternatives pkgconfig relative_symlinks features_check
++inherit java autotools update-alternatives pkgconfig relative_symlinks distro_features_check
+ 
+ REQUIRED_DISTRO_FEATURES_class-target = "x11"
+ 
+diff --git a/recipes-core/openjdk/openjdk-7_99b00-2.6.5.bb b/recipes-core/openjdk/openjdk-7_99b00-2.6.5.bb
+index d774cc2..cb670cb 100644
+--- a/recipes-core/openjdk/openjdk-7_99b00-2.6.5.bb
++++ b/recipes-core/openjdk/openjdk-7_99b00-2.6.5.bb
+@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552"
+ 
+ FILESPATH =. "${FILE_DIRNAME}/patches-openjdk-7:"
+ 
+-inherit features_check
++inherit distro_features_check
+ 
+ REQUIRED_DISTRO_FEATURES = "x11"
