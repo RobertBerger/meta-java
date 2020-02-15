@@ -1,7 +1,6 @@
 Version: 1
-Previous: cd05278239ba3df7dc004324738b5fa419616670
+Previous: 8c17a5369fabb9b3f35c198e9735a18b577785d2
 Head: a97d27ea0d6701df222c79fb1ce983fc39308c0c
 Applied:
-  0003-fix-incompatible-archiver.bbclass-do_unpack_extract_.patch: a97d27ea0d6701df222c79fb1ce983fc39308c0c
 Unapplied:
 Hidden:
