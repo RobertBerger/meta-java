@@ -1,0 +1,124 @@
+Bottom: 38096eb78f59cb2d6509bd1ba337233c431f54bc
+Top:    8231194fc9971cf8628a8e8bf7685bebe76b9a3c
+Author: robert.berger <robert.berger@ReliableEmbeddedSystems.com>
+Date:   2020-02-15 13:13:05 +0000
+
+fix incompatible archiver.bbclass/do_unpack_extract_submodules
+
+Signed-off-by: student-lxc-yp-builder-2 <student-lxc-yp-builder-2@ReliableEmbeddedSystems.com>
+
+
+---
+
+diff --git a/recipes-core/openjdk/openjdk-8-common.inc b/recipes-core/openjdk/openjdk-8-common.inc
+index 430e947..f28557f 100644
+--- a/recipes-core/openjdk/openjdk-8-common.inc
++++ b/recipes-core/openjdk/openjdk-8-common.inc
+@@ -42,6 +42,22 @@ do_unpack_extract_submodules () {
+     tar xjf ${WORKDIR}/${NASHORN_FILE_LOCAL} --transform "s,-${NASHORN_CHANGESET},,g"
+ }
+ 
++# I copied this from above and adjusted the path suitable for archiver.bbclass
++# This will be called by some hacked copy of do_unpack_and_patch
++# which originates from archiver.bbclass
++# the hacked version resides in this file
++do_unpack_extract_submodules_archiver () {
++    cd "${S}"
++    tar xjf ${WORKDIR}/../${CORBA_FILE_LOCAL} --transform "s,-${CORBA_CHANGESET},,g"
++    tar xjf ${WORKDIR}/../${HOTSPOT_FILE_LOCAL} --transform "s,-${HOTSPOT_CHANGESET},,g"
++    tar xjf ${WORKDIR}/../${JAXP_FILE_LOCAL} --transform "s,-${JAXP_CHANGESET},,g"
++    tar xjf ${WORKDIR}/../${JAXWS_FILE_LOCAL} --transform "s,-${JAXWS_CHANGESET},,g"
++    tar xjf ${WORKDIR}/../${JDK_FILE_LOCAL} --transform "s,-${JDK_CHANGESET},,g"
++    tar xjf ${WORKDIR}/../${LANGTOOLS_FILE_LOCAL} --transform "s,-${LANGTOOLS_CHANGESET},,g"
++    tar xjf ${WORKDIR}/../${NASHORN_FILE_LOCAL} --transform "s,-${NASHORN_CHANGESET},,g"
++}
++
++
+ do_unpack_delete_X11_wrappers() {
+     find ${S}/jdk/src/solaris/classes/sun/awt/X11 -maxdepth 1 -name '*.java' -delete
+ }
+@@ -183,3 +199,84 @@ BUILD_CXXFLAGS_append = " ${@openjdk_build_helper_get_build_cflags(d)}"
+ # flags for -cross
+ TARGET_CFLAGS_append = " ${@openjdk_build_helper_get_target_cflags(d)}"
+ TARGET_CXXFLAGS_append = " ${@openjdk_build_helper_get_target_cflags(d)}"
++
++# Hacked copy of do_unpack_and_patch from archiver.bbclass
++# !!! Note:
++#     This might need an updated every time do_unpack_and_patch
++#     changes in archiver.bbclass !!!
++#     This version is from zeus.
++#
++# What archiver.bblass does among other things:
++#   If we include the archiver.bbclass and depending on what we configured
++#   do_unpack_and_patch is always used for ARCHIVER_MODE[src] = "patched"
++#   and ARCHIVER_MODE[src] = "configured".
++#   For ARCHIVER_MODE[src] = "original" it is only enabled if
++#   ARCHIVER_MODE[diff] = "1" is also enabled.
++#   for the new ARCHIVE_MODE[src] = "mirror" it is never enabled.
++#
++#   do_unpack_and_patch() sets WORKDIR to ${ARCHIVER_WORKDIR},
++#   which defaults to ${WORKDIR}/archiver-work/ and also changes S.
++
++# The issue here:
++#   This makes the hacky do_unpack_extract_submodules in this file
++#   unsuitable to be used with archiver.bbclass.
++#   The tarballs ${WORKDIR}/${XXX_XXX_LOCAL} can not be found anymore
++#   so the source code which should be patched is not available anymore
++#   which leads so a quilt error.
++#
++# The workaround:
++#   do_unpack_and_patch() was copied from the archiver.bbclass and hacked
++#
++#   1) do_unpack_extract_submodules_archiver is a version of
++#      do_unpack_extract_submodules adjusted for the archiver.bbclass
++#
++#   2) do_unpack_extract_submodules_archiver needs to be called after
++#      do_unpack and before do_patch, which is difficult without
++#      changing do_unpack_and_patch, so I hacked it here.
++#      Note that this is only a one-line change to do_unpack_and_patch.
++#      bb.build.exec_func('do_unpack_extract_submodules_archiver',d)
++#
++# Run do_unpack and do_patch
++python do_unpack_and_patch() {
++    # bb.warn ("--> Hello from my do_unpack_and_patch <--")
++    if d.getVarFlag('ARCHIVER_MODE', 'src') not in \
++            [ 'patched', 'configured'] and \
++            d.getVarFlag('ARCHIVER_MODE', 'diff') != '1':
++        return
++    ar_outdir = d.getVar('ARCHIVER_OUTDIR')
++    ar_workdir = d.getVar('ARCHIVER_WORKDIR')
++    ar_sysroot_native = d.getVar('STAGING_DIR_NATIVE')
++    pn = d.getVar('PN')
++
++    # The kernel class functions require it to be on work-shared, so we dont change WORKDIR
++    if not is_work_shared(d):
++        # Change the WORKDIR to make do_unpack do_patch run in another dir.
++        d.setVar('WORKDIR', ar_workdir)
++        # Restore the original path to recipe's native sysroot (it's relative to WORKDIR).
++        d.setVar('STAGING_DIR_NATIVE', ar_sysroot_native)
++
++        # The changed 'WORKDIR' also caused 'B' changed, create dir 'B' for the
++        # possibly requiring of the following tasks (such as some recipes's
++        # do_patch required 'B' existed).
++        bb.utils.mkdirhier(d.getVar('B'))
++
++        bb.build.exec_func('do_unpack', d)
++        # hacked function which extracts stuff into dirs for archiver
++        bb.build.exec_func('do_unpack_extract_submodules_archiver',d)
++
++    # Save the original source for creating the patches
++    if d.getVarFlag('ARCHIVER_MODE', 'diff') == '1':
++        src = d.getVar('S').rstrip('/')
++        src_orig = '%s.orig' % src
++        oe.path.copytree(src, src_orig)
++
++    # Make sure gcc and kernel sources are patched only once
++    if not (d.getVar('SRC_URI') == "" or is_work_shared(d)):
++        bb.build.exec_func('do_patch', d)
++
++    # Create the patches
++    if d.getVarFlag('ARCHIVER_MODE', 'diff') == '1':
++        bb.note('Creating diff gz...')
++        create_diff_gz(d, src_orig, src, ar_outdir)
++        bb.utils.remove(src_orig, recurse=True)
++}
