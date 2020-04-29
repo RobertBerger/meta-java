@@ -169,17 +169,9 @@ EXTRA_OECONF_append = "\
         --with-update-version=${OPENJDK_UPDATE_VERSION} \
 "
 
-# Since v6, GCC sets the default C++ standard to C++14 and introduces
-# dead store elimination by default. OpenJDK 8 is not ready for either
-# of these changes.
-FLAGS_GCC6 = "-fno-lifetime-dse -fno-delete-null-pointer-checks"
-FLAGS_GCC7 = "-fno-lifetime-dse -fno-delete-null-pointer-checks"
-FLAGS_GCC8 = "-fno-lifetime-dse -fno-delete-null-pointer-checks"
-FLAGS_GCC9 = "-fno-lifetime-dse -fno-delete-null-pointer-checks"
-
 # flags for -native, and for bits that need a host-tool during -cross
-BUILD_CFLAGS_append = " ${@openjdk_build_helper_get_build_cflags(d)}"
-BUILD_CXXFLAGS_append = " ${@openjdk_build_helper_get_build_cflags(d)}"
+BUILD_CFLAGS_append = " -fno-lifetime-dse -fno-delete-null-pointer-checks"
+BUILD_CXXFLAGS_append = " -fno-lifetime-dse -fno-delete-null-pointer-checks"
 # flags for -cross
-TARGET_CFLAGS_append = " ${@openjdk_build_helper_get_target_cflags(d)}"
-TARGET_CXXFLAGS_append = " ${@openjdk_build_helper_get_target_cflags(d)}"
+TARGET_CFLAGS_append = " -fno-lifetime-dse -fno-delete-null-pointer-checks"
+TARGET_CXXFLAGS_append = " -fno-lifetime-dse -fno-delete-null-pointer-checks"
