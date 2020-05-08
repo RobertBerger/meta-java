@@ -40,7 +40,6 @@ do_unpack_extract_submodules () {
     # "special" WORKDIR - called from archiver.bbclass:do_unpack_and_patch
     # archiver.bbclass set's WORKDIR to ARCHIVER_WORKDIR:
     if [ "$WORKDIR" == "$ARCHIVER_WORKDIR" ]; then
-       bbwarn " --> Archiver mode <--"
        SUBMOD_WORKDIR="${ARCHIVER_WORKDIR}/.."
     fi
 
