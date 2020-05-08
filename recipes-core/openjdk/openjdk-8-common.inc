@@ -32,14 +32,26 @@ do_configure_prepend () {
 
 do_unpack_extract_submodules () {
     cd "${S}"
+
+    # default WORKDIR - __NOT__ called from archiver.bbclass:do_unpack_and_patch
+    # WORKDIR is __NOT_ modified:
+    SUBMOD_WORKDIR="${WORKDIR}"
+
+    # "special" WORKDIR - called from archiver.bbclass:do_unpack_and_patch
+    # archiver.bbclass set's WORKDIR to ARCHIVER_WORKDIR:
+    if [ "$WORKDIR" == "$ARCHIVER_WORKDIR" ]; then
+       bbwarn " --> Archiver mode <--"
+       SUBMOD_WORKDIR="${ARCHIVER_WORKDIR}/.."
+    fi
+
     # tar --transform
-    tar xjf ${WORKDIR}/${CORBA_FILE_LOCAL} --transform "s,-${CORBA_CHANGESET},,g"
-    tar xjf ${WORKDIR}/${HOTSPOT_FILE_LOCAL} --transform "s,-${HOTSPOT_CHANGESET},,g"
-    tar xjf ${WORKDIR}/${JAXP_FILE_LOCAL} --transform "s,-${JAXP_CHANGESET},,g"
-    tar xjf ${WORKDIR}/${JAXWS_FILE_LOCAL} --transform "s,-${JAXWS_CHANGESET},,g"
-    tar xjf ${WORKDIR}/${JDK_FILE_LOCAL} --transform "s,-${JDK_CHANGESET},,g"
-    tar xjf ${WORKDIR}/${LANGTOOLS_FILE_LOCAL} --transform "s,-${LANGTOOLS_CHANGESET},,g"
-    tar xjf ${WORKDIR}/${NASHORN_FILE_LOCAL} --transform "s,-${NASHORN_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${CORBA_FILE_LOCAL} --transform "s,-${CORBA_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${HOTSPOT_FILE_LOCAL} --transform "s,-${HOTSPOT_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${JAXP_FILE_LOCAL} --transform "s,-${JAXP_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${JAXWS_FILE_LOCAL} --transform "s,-${JAXWS_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${JDK_FILE_LOCAL} --transform "s,-${JDK_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${LANGTOOLS_FILE_LOCAL} --transform "s,-${LANGTOOLS_CHANGESET},,g"
+    tar xjf ${SUBMOD_WORKDIR}/${NASHORN_FILE_LOCAL} --transform "s,-${NASHORN_CHANGESET},,g"
 }
 
 do_unpack_delete_X11_wrappers() {
