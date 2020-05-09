@@ -1,0 +1,1 @@
+git format-patch HEAD^ -M -s --subject-prefix='meta-java][PATCH' -o /tmp
